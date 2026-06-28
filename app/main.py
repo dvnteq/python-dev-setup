@@ -1,23 +1,23 @@
-from app.db import SessionLocal
-from app.db import crud
+from fastapi import FastAPI
+from app.api import books, categories
 
-db = SessionLocal()
+app = FastAPI(
+    title="Book Library API",
+    description="API для управления библиотекой книг",
+    version="1.0.0"
+)
 
-print("\nКатегории книг:\n")
+app.include_router(categories.router)
+app.include_router(books.router)
 
-categories = crud.get_categories(db)
-for category in categories:
-    print(f"ID: {category.id} - Название: {category.title}")
+@app.get("/health", tags=["Health"])
+def health_check():
+    return {"status": "ok", "message": "API is running"}
 
-print("\nСПИСОК КНИГ\n")
-
-books = crud.get_books(db)
-for book in books:
-    print(f"ID: {book.id}")
-    print(f"Название: {book.title}")
-    print(f"Описание: {book.description}")
-    print(f"Цена: {book.price} руб.")
-    print(f"Категория ID: {book.category_id}")
-    print("\n")
-
-db.close()
+@app.get("/", tags=["Root"])
+def root():
+    return {
+        "message": "Welcome to Book Library API",
+        "docs": "/docs",
+        "health": "/health"
+    }
